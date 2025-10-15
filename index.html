@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flight Strip Task Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <div class="app__controls app__controls--left">
+        <button id="addTaskBtn" class="button button--primary" type="button">
+          Neue Aufgabe
+        </button>
+        <button id="archiveBtn" class="button button--ghost" type="button">
+          Archiv
+        </button>
+      </div>
+      <div class="app__controls app__controls--right">
+        <button id="dataBtn" class="button button--ghost button--icon" type="button" aria-label="Datenmanagement öffnen">
+          💾
+        </button>
+        <button id="themeToggle" class="button button--ghost button--icon" type="button" aria-pressed="false" aria-label="Theme umschalten">
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <section id="taskList" class="task-board" aria-live="polite"></section>
+  </main>
+
+  <div id="taskModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+    <div class="modal__content">
+      <header class="modal__header">
+        <h2 id="taskModalTitle">Neue Aufgabe</h2>
+        <button id="closeModalBtn" class="button button--ghost button--icon" type="button" aria-label="Popup schließen">
+          ✕
+        </button>
+      </header>
+
+      <form id="taskForm" class="modal__form">
+        <label class="modal__field">
+          <span>Aufgabentitel *</span>
+          <input id="taskTitle" name="title" type="text" required maxlength="120" placeholder="z. B. Slot-Update für LH218">
+        </label>
+
+        <label class="modal__field">
+          <span>Ansprechpartner</span>
+          <input id="taskContact" name="contact" type="text" maxlength="80" placeholder="z. B. S. Meyer">
+        </label>
+
+        <label class="modal__field">
+          <span>Eingang</span>
+          <input id="taskReceived" name="received" type="date">
+        </label>
+
+        <label class="modal__field">
+          <span>Notizen</span>
+          <textarea id="taskNotes" name="notes" rows="3" maxlength="280" placeholder="Zusätzliche Details zur Aufgabe"></textarea>
+        </label>
+
+        <div class="modal__actions">
+          <button id="cancelModalBtn" class="button button--ghost" type="button">Abbrechen</button>
+          <button class="button button--primary" type="submit">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="taskTemplate">
+    <article class="task-card" draggable="true">
+      <header class="task-card__header">
+        <h3 class="task-card__title"></h3>
+        <time class="task-card__meta" datetime=""></time>
+        <button class="task-card__close button button--icon button--ghost" type="button" aria-label="Aufgabe schließen">
+          ✕
+        </button>
+      </header>
+      <div class="task-card__body">
+        <p class="task-card__contact"></p>
+        <p class="task-card__notes"></p>
+      </div>
+    </article>
+  </template>
+
+  <div id="archiveModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle">
+    <div class="modal__content modal__content--archive">
+      <header class="modal__header">
+        <h2 id="archiveModalTitle">Archivierte Aufgaben</h2>
+        <button id="closeArchiveBtn" class="button button--ghost button--icon" type="button" aria-label="Archiv schließen">
+          ✕
+        </button>
+      </header>
+      <section id="archiveList" class="archive-list" aria-live="polite"></section>
+    </div>
+  </div>
+
+  <template id="archiveTaskTemplate">
+    <article class="archive-card">
+      <header class="archive-card__header">
+        <h3 class="archive-card__title"></h3>
+        <time class="archive-card__meta" datetime=""></time>
+        <button class="archive-card__delete button button--icon button--ghost" type="button" aria-label="Aufgabe löschen">
+          ✕
+        </button>
+      </header>
+      <p class="archive-card__contact"></p>
+      <p class="archive-card__notes"></p>
+    </article>
+  </template>
+
+  <div id="dataModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dataModalTitle">
+    <div class="modal__content modal__content--data">
+      <header class="modal__header">
+        <h2 id="dataModalTitle">Datenmanagement</h2>
+        <button id="closeDataBtn" class="button button--ghost button--icon" type="button" aria-label="Datenmanagement schließen">
+          ✕
+        </button>
+      </header>
+      <section class="data-section">
+        <h3>Export</h3>
+        <p>Exportiere Aufgaben und Archiv als JSON-Datei.</p>
+        <a id="exportLink" class="button button--primary data-section__export" download="flight-strip-tasks.json" href="#">
+          Daten herunterladen
+        </a>
+      </section>
+      <section class="data-section">
+        <h3>Import</h3>
+        <p>Bestehende Daten werden überschrieben. Nach dem Import lädt die Seite automatisch neu.</p>
+        <form id="importForm" class="data-import">
+          <label class="data-import__field">
+            <span>Datei auswählen (JSON)</span>
+            <input id="importFile" type="file" accept="application/json" required>
+          </label>
+          <button class="button button--primary" type="submit">Daten importieren</button>
+        </form>
+        <p class="data-import__help">Tipp: sichere vorher einen Export deiner aktuellen Aufgaben.</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
