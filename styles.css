@@ -131,6 +131,7 @@ body {
   margin-left: auto;
 }
 
+.task-card__edit,
 .task-card__close {
   flex-shrink: 0;
 }

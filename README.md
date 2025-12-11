@@ -5,7 +5,7 @@ Ein leichtgewichtiger Task-Tracker, der sich am Handling von Flight Strips orien
 ## Funktionen
 
 - Neue Aufgaben über ein Modal erfassen (Titel Pflicht, Ansprechpartner optional, Eingang optional).
-- Aufgaben erscheinen automatisch oben in der Liste und lassen sich per Drag & Drop umsortieren.
+- Aufgaben erscheinen automatisch oben in der Liste, lassen sich per Drag & Drop umsortieren und können per ✏️ erneut bearbeitet werden.
 - Aufgaben können per `✕` archiviert werden; ein Vollbild-Archiv verwaltet abgeschlossene Einträge inklusive Löschfunktion.
 - Light/Dark-Mode-Umschalter (🌙 / 🌞) mit Speicherung der letzten Auswahl.
 - Datenmanagement (💾): Export als JSON sowie Import inklusive automatischem Reload.
@@ -20,6 +20,7 @@ Ein leichtgewichtiger Task-Tracker, der sich am Handling von Flight Strips orien
 ## Bedienung
 
 - **Neue Aufgabe**: Button `Neue Aufgabe` öffnet das Formular. Titel ist Pflicht; Ansprechpartner und Datum sind optional.
+- **Bearbeiten**: In jeder Karte öffnet das ✏️-Icon das Formular mit vorausgefüllten Daten. Änderungen speichern den Eintrag an gleicher Position.
 - **Archiv**: Button `Archiv` öffnet die Archiv-Ansicht im Vollbild. Archivierte Aufgaben lassen sich dort dauerhaft löschen.
 - **Theme & Daten**: Rechts oben wechselt der Emoji-Button zwischen Light- (🌞) und Dark-Mode (🌙). Der 💾-Button öffnet den Export/Import-Dialog.
 - **Drag & Drop**: Aufgaben können in der aktiven Liste per Drag & Drop neu sortiert werden.

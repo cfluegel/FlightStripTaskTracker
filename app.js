@@ -9,11 +9,15 @@
   const addTaskBtn = document.getElementById("addTaskBtn");
   const themeToggle = document.getElementById("themeToggle");
   const taskModal = document.getElementById("taskModal");
+  const taskModalTitle = document.getElementById("taskModalTitle");
   const cancelModalBtn = document.getElementById("cancelModalBtn");
   const closeModalBtn = document.getElementById("closeModalBtn");
   const taskForm = document.getElementById("taskForm");
   const titleInput = document.getElementById("taskTitle");
+  const contactInput = document.getElementById("taskContact");
   const receivedInput = document.getElementById("taskReceived");
+  const notesInput = document.getElementById("taskNotes");
+  const submitBtn = taskForm.querySelector('button[type="submit"]');
   const template = document.getElementById("taskTemplate");
   const archiveBtn = document.getElementById("archiveBtn");
   const archiveModal = document.getElementById("archiveModal");
@@ -55,6 +59,7 @@
   let tasks = loadTasks();
   let archivedTasks = loadArchive();
   let currentTheme = getInitialTheme();
+  let editingTaskId = null;
   let exportUrl = null;
 
   applyTheme(currentTheme);
@@ -104,6 +109,7 @@
       const time = card.querySelector(".task-card__meta");
       const contact = card.querySelector(".task-card__contact");
       const notes = card.querySelector(".task-card__notes");
+      const editBtn = card.querySelector(".task-card__edit");
       const closeBtn = card.querySelector(".task-card__close");
 
       title.textContent = task.title;
@@ -125,6 +131,10 @@
 
       card.addEventListener("dragstart", handleDragStart);
       card.addEventListener("dragend", handleDragEnd);
+      editBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        startEditTask(task.id);
+      });
       closeBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         archiveTask(task.id);
@@ -150,15 +160,23 @@
     }
 
     const received = normaliseDate(receivedRaw) ?? todayISO();
-    const newTask = {
-      id: createId(),
-      title,
-      contact: contact || "",
-      received,
-      notes: notes ?? ""
-    };
+    if (editingTaskId) {
+      tasks = tasks.map((task) =>
+        task.id === editingTaskId
+          ? { ...task, title, contact: contact || "", received, notes: notes ?? "" }
+          : task
+      );
+    } else {
+      const newTask = {
+        id: createId(),
+        title,
+        contact: contact || "",
+        received,
+        notes: notes ?? ""
+      };
+      tasks = [newTask, ...tasks];
+    }
 
-    tasks = [newTask, ...tasks];
     saveTasks();
     renderTasks();
     closeModal();
@@ -228,15 +246,39 @@
   }
 
   function openModal() {
+    editingTaskId = null;
+    taskModalTitle.textContent = "Neue Aufgabe";
+    submitBtn.textContent = "Speichern";
     taskModal.classList.add("is-visible");
     const todayValue = todayISO();
     receivedInput.value = todayValue;
+    contactInput.value = "";
+    notesInput.value = "";
+    setTimeout(() => titleInput.focus(), 10);
+  }
+
+  function startEditTask(taskId) {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) {
+      return;
+    }
+    editingTaskId = task.id;
+    taskModalTitle.textContent = "Aufgabe bearbeiten";
+    submitBtn.textContent = "Aktualisieren";
+    titleInput.value = task.title ?? "";
+    contactInput.value = task.contact ?? "";
+    receivedInput.value = normaliseDate(task.received) ?? todayISO();
+    notesInput.value = task.notes ?? "";
+    taskModal.classList.add("is-visible");
     setTimeout(() => titleInput.focus(), 10);
   }
 
   function closeModal() {
     taskModal.classList.remove("is-visible");
     taskForm.reset();
+    editingTaskId = null;
+    taskModalTitle.textContent = "Neue Aufgabe";
+    submitBtn.textContent = "Speichern";
   }
 
   function handleBackdropClick(event) {
