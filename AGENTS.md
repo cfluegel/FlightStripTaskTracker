@@ -38,6 +38,7 @@
 - Keine Backends oder externen Aufrufe – bitte keine Third-Party-Skripte nachladen.
 - Export-Dateien enthalten Nutzerdaten; kommuniziere das in UI-Texten falls geändert.
 - Speichere keine Secrets im Repo; `.env` wird nicht benötigt.
+- Export/Import-Schema v1: Felder `version`, `generatedAt`, `theme`, `order`, `archiveOrder`, `tasks[]/archivedTasks[]` mit `createdAt/updatedAt`, `received`, optional `contact`/`notes` (können `null` sein), `archivedAt` nur im Archiv.
 
 ## Agent Notes
 - Architektur ist bewusst simpel (reines HTML/CSS/JS). Bevor du Tooling hinzufügst (z. B. Bundler, Test-Framework), kurz begründen und Aufwand/Nutzen abwägen.

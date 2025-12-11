@@ -4,6 +4,7 @@
   const STORAGE_ARCHIVE_KEY = "flightStripArchive";
   const STORAGE_ARCHIVE_ORDER_KEY = "flightStripArchiveOrder";
   const THEME_KEY = "flightStripTheme";
+  const EXPORT_VERSION = 1;
 
   const taskList = document.getElementById("taskList");
   const addTaskBtn = document.getElementById("addTaskBtn");
@@ -160,19 +161,24 @@
     }
 
     const received = normaliseDate(receivedRaw) ?? todayISO();
+    const nowStamp = new Date().toISOString();
+    const contactValue = contact ? contact : null;
+    const notesValue = notes ? notes : null;
     if (editingTaskId) {
       tasks = tasks.map((task) =>
         task.id === editingTaskId
-          ? { ...task, title, contact: contact || "", received, notes: notes ?? "" }
+          ? { ...task, title, contact: contactValue, received, notes: notesValue, updatedAt: nowStamp }
           : task
       );
     } else {
       const newTask = {
         id: createId(),
         title,
-        contact: contact || "",
+        contact: contactValue,
         received,
-        notes: notes ?? ""
+        notes: notesValue,
+        createdAt: nowStamp,
+        updatedAt: nowStamp
       };
       tasks = [newTask, ...tasks];
     }
@@ -223,7 +229,15 @@
     }
 
     const [task] = tasks.splice(taskIndex, 1);
-    archivedTasks = [{ ...task, archivedAt: todayISO() }, ...archivedTasks];
+    const archivedAt = todayISO();
+    archivedTasks = [
+      {
+        ...task,
+        archivedAt,
+        updatedAt: task.updatedAt ?? new Date().toISOString()
+      },
+      ...archivedTasks
+    ];
     saveTasks();
     saveArchive();
     renderTasks();
@@ -311,7 +325,7 @@
     const stored = safeParse(localStorage.getItem(STORAGE_KEY));
     const storedOrder = localStorage.getItem(STORAGE_ORDER_KEY);
     if (Array.isArray(stored)) {
-      const validTasks = stored.filter(isValidTask);
+      const validTasks = stored.filter(isValidTask).map(normaliseTaskShape);
       if (storedOrder === "desc") {
         return validTasks;
       }
@@ -321,14 +335,14 @@
       return reversed;
     }
     persist(STORAGE_ORDER_KEY, "desc");
-    return [...defaultTasks];
+    return defaultTasks.map(normaliseTaskShape);
   }
 
   function loadArchive() {
     const stored = safeParse(localStorage.getItem(STORAGE_ARCHIVE_KEY));
     const storedOrder = localStorage.getItem(STORAGE_ARCHIVE_ORDER_KEY);
     if (Array.isArray(stored)) {
-      const valid = stored.filter(isValidTask);
+      const valid = stored.filter(isValidTask).map(normaliseArchiveShape);
       if (storedOrder === "desc") {
         return valid;
       }
@@ -433,6 +447,28 @@
     return Boolean(task && task.id && task.title);
   }
 
+  function normaliseTaskShape(task) {
+    const nowStamp = new Date().toISOString();
+    const createdAt = task.createdAt ?? nowStamp;
+    return {
+      id: task.id,
+      title: task.title,
+      contact: task.contact ?? null,
+      received: normaliseDate(task.received) ?? todayISO(),
+      notes: task.notes ?? null,
+      createdAt,
+      updatedAt: task.updatedAt ?? createdAt
+    };
+  }
+
+  function normaliseArchiveShape(task) {
+    const base = normaliseTaskShape(task);
+    return {
+      ...base,
+      archivedAt: normaliseDate(task.archivedAt) ?? todayISO()
+    };
+  }
+
   function renderArchive() {
     archiveList.innerHTML = "";
     const fragment = document.createDocumentFragment();
@@ -534,8 +570,11 @@
       exportUrl = null;
     }
     const payload = {
+      version: EXPORT_VERSION,
       generatedAt: new Date().toISOString(),
       theme: currentTheme,
+      order: localStorage.getItem(STORAGE_ORDER_KEY) ?? "desc",
+      archiveOrder: localStorage.getItem(STORAGE_ARCHIVE_ORDER_KEY) ?? "desc",
       tasks,
       archivedTasks
     };
@@ -573,10 +612,12 @@
       alert("Import fehlgeschlagen: Ungültiges Datenformat.");
       return;
     }
-    persist(STORAGE_KEY, data.tasks);
-    persist(STORAGE_ORDER_KEY, "desc");
-    persist(STORAGE_ARCHIVE_KEY, data.archivedTasks);
-    persist(STORAGE_ARCHIVE_ORDER_KEY, "desc");
+    const importedTasks = data.tasks.filter(isValidTask).map(normaliseTaskShape);
+    const importedArchive = data.archivedTasks.filter(isValidTask).map(normaliseArchiveShape);
+    persist(STORAGE_KEY, importedTasks);
+    persist(STORAGE_ORDER_KEY, data.order === "asc" ? "asc" : "desc");
+    persist(STORAGE_ARCHIVE_KEY, importedArchive);
+    persist(STORAGE_ARCHIVE_ORDER_KEY, data.archiveOrder === "asc" ? "asc" : "desc");
     if (typeof data.theme === "string") {
       const theme = data.theme === "dark" ? "dark" : "light";
       persist(THEME_KEY, theme);
